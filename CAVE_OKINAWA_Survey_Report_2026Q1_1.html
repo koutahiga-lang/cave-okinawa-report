@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAVE OKINAWA｜来場者アンケート分析レポート 2026年4〜6月</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg:#0E1118; --surface:#161B27; --surface2:#1E2535;
+    --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.12);
+    --text:#F0F2F7; --muted:#7A8499; --faint:#3A4255;
+    --teal:#2DD4BF; --teal-dim:rgba(45,212,191,0.12);
+    --blue:#60A5FA; --blue-dim:rgba(96,165,250,0.12);
+    --amber:#FBBF24; --amber-dim:rgba(251,191,36,0.12);
+    --pink:#F472B6; --pink-dim:rgba(244,114,182,0.12);
+    --coral:#FB923C; --purple:#A78BFA; --green:#4ADE80;
+    --radius:12px; --radius-sm:8px;
+    --px:16px;
+  }
+  @media(min-width:600px){ :root{ --px:28px; } }
+  @media(min-width:900px){ :root{ --px:48px; } }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'Inter','Noto Sans JP',sans-serif;
+    font-size:14px; line-height:1.7; min-height:100vh;
+    overflow-x:hidden;
+  }
+
+  /* ─── HEADER ─── */
+  .header{
+    background:linear-gradient(135deg,#0E1118 0%,#161B27 50%,#1a2236 100%);
+    border-bottom:1px solid var(--border2);
+    padding:28px var(--px) 24px;
+    position:relative; overflow:hidden;
+  }
+  .header::before{
+    content:''; position:absolute;
+    top:-80px; right:-80px;
+    width:260px; height:260px;
+    background:radial-gradient(circle,rgba(45,212,191,0.07) 0%,transparent 70%);
+    pointer-events:none;
+  }
+  .header-eyebrow{
+    font-size:10px; font-weight:500;
+    letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--teal); margin-bottom:10px;
+  }
+  .header-title{
+    font-size:clamp(18px,4vw,26px); font-weight:700;
+    letter-spacing:-0.02em; color:var(--text);
+    line-height:1.25; margin-bottom:6px;
+  }
+  .header-sub{ font-size:12px; color:var(--muted); line-height:1.6; }
+  .header-meta{
+    display:flex; gap:16px; margin-top:20px;
+    flex-wrap:wrap;
+  }
+  .meta-item{ display:flex; flex-direction:column; gap:2px; }
+  .meta-label{
+    font-size:9px; font-weight:500;
+    letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--muted);
+  }
+  .meta-value{
+    font-size:clamp(16px,4vw,22px); font-weight:700;
+    color:var(--text); letter-spacing:-0.02em;
+  }
+  .meta-value span{ font-size:11px; font-weight:400; color:var(--muted); margin-left:3px; }
+
+  /* ─── NAV ─── */
+  .nav{
+    background:var(--surface); border-bottom:1px solid var(--border);
+    padding:0 var(--px);
+    display:flex; gap:0;
+    overflow-x:auto; -webkit-overflow-scrolling:touch;
+    position:sticky; top:0; z-index:100;
+    scrollbar-width:none;
+  }
+  .nav::-webkit-scrollbar{ display:none; }
+  .nav-tab{
+    padding:12px 14px;
+    font-size:12px; font-weight:500;
+    color:var(--muted); cursor:pointer;
+    border:none; border-bottom:2px solid transparent;
+    white-space:nowrap;
+    transition:color .2s, border-color .2s;
+    background:none; flex-shrink:0;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .nav-tab:hover{ color:var(--text); }
+  .nav-tab.active{ color:var(--teal); border-bottom-color:var(--teal); }
+
+  /* ─── PAGE ─── */
+  .page{ display:none; padding:24px var(--px) 60px; }
+  .page.active{ display:block; }
+
+  /* ─── SECTION ─── */
+  .section{ margin-bottom:36px; }
+  .section-title{
+    font-size:15px; font-weight:600; color:var(--text);
+    margin-bottom:16px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .section-title::after{
+    content:''; flex:1; height:1px; background:var(--border);
+    min-width:0;
+  }
+
+  /* ─── GRIDS ─── */
+  .grid-4{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+  }
+  @media(min-width:700px){
+    .grid-4{ grid-template-columns:repeat(4,1fr); gap:14px; }
+  }
+  .grid-3{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:12px;
+  }
+  @media(min-width:600px){
+    .grid-3{ grid-template-columns:repeat(2,1fr); }
+  }
+  @media(min-width:900px){
+    .grid-3{ grid-template-columns:repeat(3,1fr); }
+  }
+  .grid-2{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:14px;
+  }
+  @media(min-width:700px){
+    .grid-2{ grid-template-columns:1fr 1fr; gap:18px; }
+  }
+
+  /* ─── KPI CARD ─── */
+  .kpi{
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:16px 18px;
+    position:relative; overflow:hidden;
+  }
+  .kpi::before{
+    content:''; position:absolute;
+    top:0; left:0; right:0; height:2px;
+  }
+  .kpi.teal::before{ background:var(--teal); }
+  .kpi.blue::before{ background:var(--blue); }
+  .kpi.amber::before{ background:var(--amber); }
+  .kpi.pink::before{ background:var(--pink); }
+  .kpi-label{
+    font-size:10px; color:var(--muted);
+    font-weight:500; letter-spacing:0.06em;
+    text-transform:uppercase; margin-bottom:6px;
+  }
+  .kpi-val{
+    font-size:clamp(22px,6vw,32px); font-weight:700;
+    letter-spacing:-0.03em; line-height:1; margin-bottom:5px;
+  }
+  .kpi.teal .kpi-val{ color:var(--teal); }
+  .kpi.blue .kpi-val{ color:var(--blue); }
+  .kpi.amber .kpi-val{ color:var(--amber); }
+  .kpi.pink .kpi-val{ color:var(--pink); }
+  .kpi-sub{ font-size:11px; color:var(--muted); }
+  .kpi-trend{ font-size:11px; font-weight:500; margin-top:4px; }
+  .kpi-trend.down{ color:#F87171; }
+  .kpi-trend.up{ color:var(--teal); }
+
+  /* ─── CARD ─── */
+  .card{
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:18px;
+  }
+  @media(min-width:600px){ .card{ padding:22px 24px; } }
+  .card-title{ font-size:13px; font-weight:600; color:var(--text); margin-bottom:4px; }
+  .card-desc{ font-size:11px; color:var(--muted); margin-bottom:16px; line-height:1.5; }
+
+  /* ─── CHART WRAP ─── */
+  .chart-wrap{ position:relative; width:100%; min-width:0; }
+
+  /* ─── LEGEND ─── */
+  .legend{ display:flex; flex-wrap:wrap; gap:8px 14px; margin-bottom:12px; }
+  .legend-item{ display:flex; align-items:center; gap:5px; font-size:11px; color:var(--muted); }
+  .legend-dot{ width:8px; height:8px; border-radius:2px; flex-shrink:0; }
+
+  /* ─── INSIGHT ─── */
+  .insight{
+    background:var(--surface2); border:1px solid var(--border);
+    border-left:3px solid var(--teal);
+    border-radius:0 var(--radius-sm) var(--radius-sm) 0;
+    padding:14px 16px; margin-top:14px;
+    font-size:13px; color:#BCC4D4; line-height:1.75;
+  }
+  .insight.blue{ border-left-color:var(--blue); }
+  .insight.amber{ border-left-color:var(--amber); }
+  .insight.pink{ border-left-color:var(--pink); }
+  .insight strong{ color:var(--text); font-weight:600; }
+  .insight .tag{
+    display:inline-block; font-size:10px; font-weight:600;
+    padding:2px 6px; border-radius:4px;
+    margin-right:3px; vertical-align:middle;
+  }
+  .tag-jp{ background:rgba(74,222,128,0.15); color:#4ADE80; }
+  .tag-en{ background:rgba(96,165,250,0.15); color:#60A5FA; }
+  .tag-tw{ background:rgba(251,191,36,0.15); color:#FBBF24; }
+  .tag-kr{ background:rgba(244,114,182,0.15); color:#F472B6; }
+  .tag-warn{ background:rgba(251,191,36,0.15); color:#FBBF24; }
+  .tag-alert{ background:rgba(248,113,113,0.15); color:#F87171; }
+  .tag-good{ background:rgba(74,222,128,0.15); color:#4ADE80; }
+
+  /* ─── BADGES ─── */
+  .lang-badges{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:20px; align-items:center; }
+  .badge{
+    display:inline-flex; align-items:center; gap:4px;
+    font-size:11px; font-weight:500;
+    padding:4px 10px; border-radius:20px; border:1px solid;
+  }
+  .badge-jp{ background:rgba(74,222,128,0.08); color:#4ADE80; border-color:rgba(74,222,128,0.25); }
+  .badge-en{ background:rgba(96,165,250,0.08); color:#60A5FA; border-color:rgba(96,165,250,0.25); }
+  .badge-tw{ background:rgba(251,191,36,0.08); color:#FBBF24; border-color:rgba(251,191,36,0.25); }
+  .badge-kr{ background:rgba(244,114,182,0.08); color:#F472B6; border-color:rgba(244,114,182,0.25); }
+
+  /* ─── TABLE ─── */
+  .table-scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; border-radius:var(--radius-sm); }
+  .data-table{ width:100%; border-collapse:collapse; font-size:12px; min-width:340px; }
+  .data-table th{
+    text-align:left; padding:9px 12px;
+    font-size:10px; font-weight:500;
+    letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--muted); border-bottom:1px solid var(--border);
+    white-space:nowrap;
+  }
+  .data-table td{
+    padding:10px 12px; border-bottom:1px solid var(--border);
+    color:#BCC4D4; white-space:nowrap;
+  }
+  .data-table td:first-child{ white-space:normal; word-break:break-all; }
+  .data-table tr:last-child td{ border-bottom:none; }
+  .bar-cell{ display:flex; align-items:center; gap:8px; }
+  .bar-bg{ flex:1; height:5px; background:var(--faint); border-radius:3px; min-width:40px; }
+  .bar-fill{ height:5px; border-radius:3px; }
+
+  /* ─── SUMMARY CARDS ─── */
+  .summary-card{
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:18px 20px;
+  }
+  .summary-card .icon{
+    width:34px; height:34px; border-radius:var(--radius-sm);
+    display:flex; align-items:center; justify-content:center;
+    font-size:17px; margin-bottom:12px;
+  }
+  .summary-card .sc-title{ font-size:13px; font-weight:600; color:var(--text); margin-bottom:5px; }
+  .summary-card .sc-body{ font-size:12px; color:var(--muted); line-height:1.7; }
+
+  /* ─── CONCERN GRID ─── */
+  .concern-grid{
+    display:grid; grid-template-columns:1fr; gap:10px; margin-top:16px;
+  }
+  @media(min-width:600px){
+    .concern-grid{ grid-template-columns:repeat(3,1fr); }
+  }
+  .concern-item{
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:var(--radius-sm); padding:14px 15px;
+  }
+  .concern-month{
+    font-size:10px; font-weight:600; color:var(--muted);
+    text-transform:uppercase; margin-bottom:8px;
+  }
+  .concern-tags{ display:flex; flex-direction:column; gap:6px; }
+  .ctag{
+    display:flex; align-items:flex-start; gap:7px;
+    font-size:12px; color:#BCC4D4; line-height:1.5;
+  }
+  .ctag-dot{ width:6px; height:6px; border-radius:50%; flex-shrink:0; margin-top:5px; }
+
+  /* ─── KEYWORD CHIPS ─── */
+  .chip-group{ display:flex; flex-wrap:wrap; gap:6px; }
+  .chip{
+    background:var(--surface2); padding:3px 10px;
+    border-radius:20px; font-size:12px; color:#BCC4D4;
+  }
+
+  /* ─── NORMALIZE NOTE ─── */
+  .norm-note{
+    font-size:11px; color:var(--muted);
+    margin-top:10px; line-height:1.6;
+  }
+  .norm-note strong{ color:var(--text); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-eyebrow">Customer Survey Analysis Report</div>
+  <div class="header-title">CAVE OKINAWA<br>来場者アンケート分析レポート</div>
+  <div class="header-sub">集計期間：2026年4月1日〜6月（集計中）<br>日本語・英語・繁体字・韓国語</div>
+  <div class="header-meta">
+    <div class="meta-item">
+      <div class="meta-label">総回答数</div>
+      <div class="meta-value">309<span>件</span></div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">日本語</div>
+      <div class="meta-value">212<span>件</span></div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">繁体字</div>
+      <div class="meta-value">62<span>件</span></div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">英語</div>
+      <div class="meta-value">31<span>件</span></div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">韓国語</div>
+      <div class="meta-value">4<span>件</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="nav-tab active" onclick="showPage('overview')">概要・サマリー</button>
+  <button class="nav-tab" onclick="showPage('jp')">🇯🇵 日本語</button>
+  <button class="nav-tab" onclick="showPage('intl')">🌏 海外客比較</button>
+  <button class="nav-tab" onclick="showPage('media')">認知経路</button>
+  <button class="nav-tab" onclick="showPage('reason')">来場決め手</button>
+  <button class="nav-tab" onclick="showPage('concern')">悩み・不満・改善</button>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE 1: OVERVIEW
+══════════════════════════════════════ -->
+<div class="page active" id="p-overview">
+  <div class="section">
+    <div class="section-title">月別 回答数トレンド</div>
+    <div class="grid-4">
+      <div class="kpi teal">
+        <div class="kpi-label">4月 総回答数</div>
+        <div class="kpi-val">144</div>
+        <div class="kpi-sub">JP:100 / TW:33 / EN:9 / KR:2</div>
+      </div>
+      <div class="kpi blue">
+        <div class="kpi-label">5月 総回答数</div>
+        <div class="kpi-val">112</div>
+        <div class="kpi-sub">JP:81 / TW:15 / EN:14 / KR:2</div>
+        <div class="kpi-trend down">▼ 22% (4月比)</div>
+      </div>
+      <div class="kpi amber">
+        <div class="kpi-label">6月 総回答数</div>
+        <div class="kpi-val">53</div>
+        <div class="kpi-sub">JP:31 / TW:14 / EN:8 / KR:0</div>
+        <div class="kpi-trend down">▼ 63% (4月比・集計中)</div>
+      </div>
+      <div class="kpi pink">
+        <div class="kpi-label">初来場率（全言語）</div>
+        <div class="kpi-val">97%</div>
+        <div class="kpi-sub">リピーター育成の余地あり</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">回答数の推移（言語別）</div>
+    <div class="card">
+      <div class="card-desc">各言語フォームの月別回答件数。繁体字は4月が突出して多く、英語は5月にピーク。</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#4ADE80"></div>日本語</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#60A5FA"></div>英語</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#FBBF24"></div>繁体字</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#F472B6"></div>韓国語</div>
+      </div>
+      <div class="chart-wrap" data-h="260" data-mob="195">
+        <canvas id="overviewChart" role="img" aria-label="言語別月別回答数推移"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">居住地区分（全言語 合計）</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">居住地区分（日本語）</div>
+        <div class="card-desc">県外観光客が圧倒的多数。5月に県内比率が上昇。</div>
+        <div class="chart-wrap" data-h="220" data-mob="180"><canvas id="resJP" role="img" aria-label="日本語居住地月別"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">海外客の居住地（英語・繁体字）</div>
+        <div class="card-desc">英語・繁体字ともに海外在住（国外）が大半。英語客の一部は県内在住外国人。</div>
+        <div class="chart-wrap" data-h="220" data-mob="180"><canvas id="resIntl" role="img" aria-label="海外客居住地"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">来場前の立ち寄りエリア（月別変化）</div>
+    <div class="card">
+      <div class="card-desc">4〜5月は恩納村・うるま市周辺が中心。6月は那覇市が急増——南部ルートからの来場が増加中。</div>
+      <div class="chart-wrap" data-h="240" data-mob="180"><canvas id="areaChart" role="img" aria-label="来場前エリア月別"></canvas></div>
+      <div class="insight">
+        <span class="tag tag-warn">注目</span>
+        6月に<strong>那覇市からの来場が急増</strong>（日本語11件・繁体字6件）。南部観光ルート（万座毛・美ら海との組み合わせ）での来場者が増加しており、那覇市内宿泊施設や南部観光客向け広告配信の検討余地あり。
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">主要インサイト まとめ</div>
+    <div class="grid-3">
+      <div class="summary-card">
+        <div class="icon" style="background:rgba(96,165,250,0.12)">🗺️</div>
+        <div class="sc-title">競合施設 TOP3（名寄せ後）</div>
+        <div class="sc-body">①アメリカンビレッジ 7件（表記ゆれ統合）②美ら海水族館 6件③ビオスの丘 5件。6月は万座毛が急浮上（4件）。台湾客は青の洞窟が最多（3件）——水中体験との組み合わせルートを意識した広告が有効。</div>
+      </div>
+      <div class="summary-card">
+        <div class="icon" style="background:var(--teal-dim)">🌧️</div>
+        <div class="sc-title">「雨でも楽しめる」が5月に逆転首位</div>
+        <div class="sc-body">日本語客の来場決め手として5月に「雨でも楽しめる」（53件）が「神秘的な雰囲気」（43件）を逆転。梅雨期の訴求メッセージが機能していることを示す。</div>
+      </div>
+      <div class="summary-card">
+        <div class="icon" style="background:var(--amber-dim)">📸</div>
+        <div class="sc-title">台湾客には「写真映え」訴求が有効</div>
+        <div class="sc-body">繁体字客の来場決め手として「写真映え（適合拍照打卡）」が全月で上位。日本語客よりも高い比率で、Instagramグラフィックや中国語SNS訴求の強化が有効。</div>
+      </div>
+      <div class="summary-card">
+        <div class="icon" style="background:var(--blue-dim)">🔦</div>
+        <div class="sc-title">夜間営業への関心が全言語で1位</div>
+        <div class="sc-body">イルミネーション（夜間営業）への関心が4言語すべてで最多。JP:102件、TW:23件、EN:10件、KR:3件。将来的な夜間営業実施時の訴求力は高い。</div>
+      </div>
+      <div class="summary-card">
+        <div class="icon" style="background:rgba(248,113,113,0.12)">📱</div>
+        <div class="sc-title">英語客のSNSフォロー率が著しく低い</div>
+        <div class="sc-body">英語客のSNSフォロー率が5月に7%まで低下。日本語客55%・繁体字客33%と比較して大きな差。施設内での多言語フォロー誘導（QRポップ等）が必要。</div>
+      </div>
+      <div class="summary-card">
+        <div class="icon" style="background:var(--pink-dim)">🇰🇷</div>
+        <div class="sc-title">韓国語客はファミリー層に特化</div>
+        <div class="sc-body">韓国語フォームの全回答（4件）が「子どもと行きやすい」を決め手として選択。韓国語SNSやOTAでのファミリー向け訴求が集客に直結する可能性が高い。</div>
+      </div>
+      <div class="summary-card">
+        <div class="icon" style="background:rgba(248,113,113,0.12)">⚠️</div>
+        <div class="sc-title">6月に案内サインへの不満が複数言語で顕在化</div>
+        <div class="sc-body">日本語・繁体字の両方で6月に「案内板が少ない」「入口が分かりにくい」という指摘が出現。音声ガイド再生ポイントの不明確さも2件。施設側の共通改善課題。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE 2: JAPANESE
+══════════════════════════════════════ -->
+<div class="page" id="p-jp">
+  <div class="section">
+    <div class="section-title">年代・性別 月別推移</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">年代構成（月別）</div>
+        <div class="card-desc">積み上げ棒グラフ。30代リードから40代へシフト。</div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#818CF8"></div>10代</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#2DD4BF"></div>20代</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#FB923C"></div>30代</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#60A5FA"></div>40代</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#FBBF24"></div>50代</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#F472B6"></div>60代</div>
+        </div>
+        <div class="chart-wrap" data-h="260" data-mob="195"><canvas id="jpAge" role="img" aria-label="日本語年代月別"></canvas></div>
+        <div class="insight">
+          4月は<strong>30代が最多</strong>（28件）。5・6月は<strong>40代が首位</strong>に変化。30代が5月以降に急減（28→16→1件）。60代は3ヶ月とも安定（12→9→5件）。
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">性別・来場回数</div>
+        <div class="card-desc">女性優位が継続。リピーターは全体の3〜9%。</div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#F472B6"></div>女性</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#60A5FA"></div>男性</div>
+        </div>
+        <div class="chart-wrap" data-h="200" data-mob="180"><canvas id="jpGender" role="img" aria-label="日本語性別月別"></canvas></div>
+        <div class="chart-wrap" style="height:100px; margin-top:16px"><canvas id="jpVisit" role="img" aria-label="日本語来場回数月別"></canvas></div>
+        <div class="insight">
+          4月は<strong>女性が2:1</strong>の比率（66:33）。5月以降は男性比率が上昇。リピーター（2回目以上）は5月に増加（3→11件）——GW効果でリピートが誘発された可能性。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">滞在時間 & 来場人数</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">滞在時間分布（月別）</div>
+        <div class="card-desc">「30〜40分」が常に最多。5月は60分超が増加。</div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#A78BFA"></div>30分未満</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#7F77DD"></div>30〜40分</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#534AB7"></div>40〜60分</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#F472B6"></div>60分以上</div>
+        </div>
+        <div class="chart-wrap" data-h="220" data-mob="180"><canvas id="jpStay" role="img" aria-label="日本語滞在時間月別"></canvas></div>
+        <div class="insight">5月にGW需要で<strong>60分以上滞在</strong>が7→11件に増加。海外客（EN/TW）は「40〜60分」が主流で日本語客より長く滞在する傾向。</div>
+      </div>
+      <div class="card">
+        <div class="card-title">来場人数分布</div>
+        <div class="card-desc">2人組が全月で最多。ファミリー（4〜6人）が5月GWに増加。</div>
+        <div class="chart-wrap" data-h="260" data-mob="195"><canvas id="jpGroup" role="img" aria-label="日本語来場人数月別"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">SNSフォロー率 & 他に検討した観光施設</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">SNSフォロー率（月別）</div>
+        <div class="card-desc">改善傾向（51%→55%→61%）。</div>
+        <div class="chart-wrap" data-h="200" data-mob="180"><canvas id="jpSNS" role="img" aria-label="SNSフォロー月別"></canvas></div>
+        <div class="insight">日本語客のフォロー率は<strong>改善傾向</strong>。英語客は5月に7%と激低——英語コンテンツ・多言語フォロー誘導の強化が急務。</div>
+      </div>
+      <div class="card">
+        <div class="card-title">他に検討した観光施設（名寄せ後・月別）</div>
+        <div class="card-desc">自由記述の表記ゆれを統合済み。「アメリカビレッジ」「美浜ビレッジ」等→アメリカンビレッジに統一。</div>
+        <div class="chart-wrap" data-h="220" data-mob="180"><canvas id="jpCompete" role="img" aria-label="他に検討した観光施設"></canvas></div>
+        <div class="insight">
+          名寄せ後累計1位：<strong>アメリカンビレッジ</strong> 7件（表記ゆれ4種類を統合）。2位：美ら海水族館 6件、3位：ビオスの丘 5件。6月は<strong>万座毛が4件で急浮上</strong>——南部ルート来場者増と一致。<span class="tag tag-warn">台湾客</span>は青の洞窟が最多（3件）——マリンアクティビティとの周遊ルートを意識した訴求が有効。
+        </div>
+        <div style="margin-top:16px">
+          <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px">言語別 累計ランキング（名寄せ後）</div>
+          <div class="table-scroll"><table class="data-table">
+            <thead><tr><th>施設名</th><th>🇯🇵 JP</th><th>🇹🇼 TW</th><th>🇺🇸 EN</th><th>合計</th><th>傾向</th></tr></thead>
+            <tbody>
+              <tr><td>アメリカンビレッジ</td><td>7</td><td>1</td><td>1</td><td>9</td><td><span class="tag tag-jp">JP主導</span></td></tr>
+              <tr><td>美ら海水族館</td><td>6</td><td>1</td><td>1</td><td>8</td><td><span class="tag tag-good">全言語</span></td></tr>
+              <tr><td>ビオスの丘</td><td>5</td><td>1</td><td>2</td><td>8</td><td><span class="tag tag-good">全言語</span></td></tr>
+              <tr><td>万座毛</td><td>4</td><td>2</td><td>—</td><td>6</td><td><span class="tag tag-warn">6月急増</span></td></tr>
+              <tr><td>青の洞窟</td><td>1</td><td>3</td><td>1</td><td>5</td><td><span class="tag tag-tw">TW主導</span></td></tr>
+              <tr><td>神村酒造</td><td>3</td><td>—</td><td>—</td><td>3</td><td><span class="tag tag-jp">JP専用</span></td></tr>
+              <tr><td>首里城</td><td>2</td><td>—</td><td>1</td><td>3</td><td><span class="tag tag-good">定番観光地</span></td></tr>
+              <tr><td>勝連城跡</td><td>2</td><td>—</td><td>—</td><td>2</td><td><span class="tag tag-jp">近隣セット</span></td></tr>
+            </tbody>
+          </table></div>
+          <div class="norm-note">
+            <strong>名寄せ対応一覧：</strong>アメリカビレッジ・美浜ビレッジ・アメリカナンタラ・American village・美國村→アメリカンビレッジ ／ 美ら海・Acuarium・美麗海水族館→美ら海水族館 ／ Bios Hill・botanical garden・東南植物園→ビオスの丘 ／ 青之洞・藍洞・青洞・Blue Cave→青の洞窟 ／ かてな展望台→嘉手納展望台 ／ ぬちまーす→ぬちまーす工場
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE 3: INTERNATIONAL COMPARISON
+══════════════════════════════════════ -->
+<div class="page" id="p-intl">
+  <div class="lang-badges">
+    <div class="badge badge-jp">🇯🇵 日本語 212件</div>
+    <div class="badge badge-tw">🇹🇼 繁体字 62件</div>
+    <div class="badge badge-en">🇺🇸 English 31件</div>
+    <div class="badge badge-kr">🇰🇷 한국어 4件</div>
+    <div style="font-size:11px; color:var(--muted);">※韓国語はサンプル少のため参考値</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">年代・性別 言語別比較</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">年代分布（4〜6月累計）</div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#4ADE80"></div>🇯🇵 日本語</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#60A5FA"></div>🇺🇸 英語</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#FBBF24"></div>🇹🇼 繁体字</div>
+        </div>
+        <div class="chart-wrap" data-h="240" data-mob="180"><canvas id="intlAge" role="img" aria-label="言語別年代分布"></canvas></div>
+        <div class="insight">
+          <span class="tag tag-jp">JP</span>30〜40代が中心。<br>
+          <span class="tag tag-en">EN</span>20〜40代が均等分布。<br>
+          <span class="tag tag-tw">TW</span>30代が突出（4月16件）——GW前の台湾人旅行者ピークと一致。
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">滞在時間 言語別比較（累計）</div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#4ADE80"></div>🇯🇵</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#60A5FA"></div>🇺🇸</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#FBBF24"></div>🇹🇼</div>
+        </div>
+        <div class="chart-wrap" data-h="240" data-mob="180"><canvas id="intlStay" role="img" aria-label="言語別滞在時間"></canvas></div>
+        <div class="insight">
+          <span class="tag tag-en">EN</span><strong>40〜60分</strong>が55%と最多——日本語客（40〜60分は20%）より大幅に長く滞在。<span class="tag tag-warn">カフェ誘導の余地大</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">SNSフォロー率 言語別（月別 %）</div>
+    <div class="card">
+      <div class="card-desc">英語客のSNSフォロー率の低さが顕著。5月に14件中1件（7%）まで低下。日本語・繁体字は改善傾向。</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#4ADE80"></div>🇯🇵 日本語</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#60A5FA"></div>🇺🇸 英語</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#FBBF24"></div>🇹🇼 繁体字</div>
+      </div>
+      <div class="chart-wrap" data-h="220" data-mob="180"><canvas id="intlSNS" role="img" aria-label="言語別SNSフォロー率"></canvas></div>
+      <div class="insight blue">
+        <strong>アクション提案：</strong>英語・中国語対応のSNSフォロー誘導POPを施設内に設置。QRコードをInstagramプロフィールへ直リンクし、フォロー特典（割引クーポン等）を付与することで英語・台湾語客のフォロー率改善が期待できる。
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">来場前エリア 台湾客 月別変化</div>
+    <div class="card">
+      <div class="card-desc">台湾客の来場前エリアも6月に那覇市が急増（6件）。日本語客と同様の南部ルート増加トレンドが見られる。</div>
+      <div class="chart-wrap" data-h="220" data-mob="180"><canvas id="twArea" role="img" aria-label="台湾客来場前エリア月別"></canvas></div>
+      <div class="insight amber">
+        4〜5月：恩納村・北谷町周辺（中部リゾートエリア）が中心。<strong>6月：那覇市が6件・名護市が5件</strong>と南北両端からの来場が増加。那覇〜名護間の中間立地を活かした南北ルート訴求が有効。
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE 4: MEDIA
+══════════════════════════════════════ -->
+<div class="page" id="p-media">
+  <div class="section">
+    <div class="section-title">認知経路 言語別比較（4〜6月累計）</div>
+    <div class="card">
+      <div class="card-desc">全言語でGoogleマップが安定上位。日本語はInstagramが最強、台湾語は6月に口コミが急上昇。</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#4ADE80"></div>🇯🇵 日本語</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#60A5FA"></div>🇺🇸 英語</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#FBBF24"></div>🇹🇼 繁体字</div>
+      </div>
+      <div class="chart-wrap" data-h="300" data-mob="225"><canvas id="mediaAll" role="img" aria-label="言語別認知経路累計比較"></canvas></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">日本語 認知経路 月別推移</div>
+    <div class="card">
+      <div class="card-desc">Instagram・Google検索が1〜2位を競う。6月はフリーペーパーが相対的に浮上。</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#F472B6"></div>Instagram</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#60A5FA"></div>Google検索</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#2DD4BF"></div>Googleマップ</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#FBBF24"></div>知人の紹介</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#9CA3AF"></div>雑誌等</div>
+      </div>
+      <div class="chart-wrap" data-h="240" data-mob="180"><canvas id="mediaJP" role="img" aria-label="日本語認知経路月別"></canvas></div>
+      <div class="insight">
+        <strong>Instagram（28→21→10件）</strong>とGoogle検索（24→20→4件）がほぼ同率で推移。6月にGoogle検索が急減する一方、<strong>フリーペーパーは件数を維持（3→4→5件）</strong>——来場数が減る6月の紙媒体の安定性が示唆される。
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">台湾語 認知経路 月別推移</div>
+    <div class="card">
+      <div class="card-desc">4月はGoogle・Instagramが主流。6月に親友紹介が逆転首位（5件）——口コミ連鎖の兆候。</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#60A5FA"></div>Google地図</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#2DD4BF"></div>Google検索</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#F472B6"></div>Instagram</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#FBBF24"></div>親友紹介</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#A78BFA"></div>YouTube</div>
+      </div>
+      <div class="chart-wrap" data-h="240" data-mob="180"><canvas id="mediaTW" role="img" aria-label="台湾語認知経路月別"></canvas></div>
+      <div class="insight amber">
+        6月に<strong>親友介紹（口コミ）が1位</strong>に浮上（5件）。台湾人コミュニティ内での評判が高まっており、台湾語でのSNSコンテンツ強化・インフルエンサー施策が口コミ連鎖をさらに加速させる可能性がある。
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">英語 認知経路 月別推移</div>
+    <div class="card">
+      <div class="card-desc">Google Maps・検索が主軸。6月は口コミ（Word of mouth）が急浮上（3件／8件中・37%）。</div>
+      <div class="chart-wrap" data-h="200" data-mob="180"><canvas id="mediaEN" role="img" aria-label="英語認知経路月別"></canvas></div>
+      <div class="insight blue">
+        英語圏来場者のGoogleレビュー品質が集客に直結。<strong>英語レビューへの返信対応</strong>と高評価レビューの獲得施策が重要。6月の口コミ急増はGoogleレビュー経由の連鎖の可能性がある。
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE 5: DECISION FACTORS
+══════════════════════════════════════ -->
+<div class="page" id="p-reason">
+  <div class="section">
+    <div class="section-title">来場決め手 言語別比較（4〜6月累計）</div>
+    <div class="card">
+      <div class="card-desc">言語によって最重要訴求ポイントが異なる。日本語は「雨でも楽しめる」、台湾語は「神秘的な雰囲気」と「写真映え」が特に強い。</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#4ADE80"></div>🇯🇵 日本語</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#60A5FA"></div>🇺🇸 英語</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#FBBF24"></div>🇹🇼 繁体字</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#F472B6"></div>🇰🇷 韓国語</div>
+      </div>
+      <div class="chart-wrap" data-h="320" data-mob="240"><canvas id="reasonAll" role="img" aria-label="言語別来場決め手比較"></canvas></div>
+      <div class="insight">
+        <span class="tag tag-jp">JP</span><strong>「雨でも楽しめる」119件</strong>——梅雨・雨天訴求が日本語広告の最重要メッセージ。<br>
+        <span class="tag tag-tw">TW</span><strong>「写真映え」27件</strong>（33%）——繁体字SNS広告はフォトジェニック訴求に特化が有効。<br>
+        <span class="tag tag-en">EN</span>「立地の良さ」「口コミ」も上位——Googleマップ最適化が集客に直結。<br>
+        <span class="tag tag-kr">KR</span>全件「子連れ」——韓国語広告はファミリー向けビジュアルに絞る。
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">日本語 来場決め手 月別推移</div>
+    <div class="card">
+      <div class="card-desc">4月は「神秘的な雰囲気」、5月は「雨でも楽しめる」が逆転首位。</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#A78BFA"></div>神秘的な雰囲気</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#60A5FA"></div>雨でも楽しめる</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#2DD4BF"></div>沖縄らしい自然体験</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#F472B6"></div>写真映え</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#FBBF24"></div>子どもと行きやすい</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#FB923C"></div>割引キャンペーン</div>
+      </div>
+      <div class="chart-wrap" data-h="260" data-mob="195"><canvas id="reasonJP" role="img" aria-label="日本語来場決め手月別"></canvas></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">興味のあるイベント・サービス（言語別比較）</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">興味イベント 言語別累計</div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#4ADE80"></div>🇯🇵</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#60A5FA"></div>🇺🇸</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#FBBF24"></div>🇹🇼</div>
+        </div>
+        <div class="chart-wrap" data-h="280" data-mob="210"><canvas id="eventAll" role="img" aria-label="言語別興味イベント"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">インサイト：イベント別の国籍ターゲット</div>
+        <div class="card-desc">各イベントが響く客層が言語によって異なる。</div>
+        <div class="table-scroll"><table class="data-table">
+          <thead>
+            <tr>
+              <th>イベント</th>
+              <th>強い言語</th>
+              <th>累計関心数</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>🌟 イルミネーション</td><td><span class="tag tag-jp">JP</span><span class="tag tag-tw">TW</span><span class="tag tag-en">EN</span></td><td>
+              <div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:100%;background:#2DD4BF"></div></div>138件</div>
+            </td></tr>
+            <tr><td>🎵 LIVEイベント</td><td><span class="tag tag-tw">TW</span><span class="tag tag-en">EN</span></td><td>
+              <div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:23%;background:#60A5FA"></div></div>32件</div>
+            </td></tr>
+            <tr><td>🍊 フルーツ採集</td><td><span class="tag tag-jp">JP</span></td><td>
+              <div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:23%;background:#4ADE80"></div></div>36件</div>
+            </td></tr>
+            <tr><td>🏪 地元特産品フェア</td><td><span class="tag tag-jp">JP</span><span class="tag tag-tw">TW</span></td><td>
+              <div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:29%;background:#FBBF24"></div></div>46件</div>
+            </td></tr>
+            <tr><td>🎡 移動式遊園地</td><td><span class="tag tag-tw">TW</span></td><td>
+              <div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:9%;background:#F472B6"></div></div>13件</div>
+            </td></tr>
+            <tr><td>🖼️ 展示会</td><td><span class="tag tag-tw">TW</span><span class="tag tag-en">EN</span></td><td>
+              <div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:9%;background:#A78BFA"></div></div>13件</div>
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE 6: CONCERNS
+══════════════════════════════════════ -->
+<div class="page" id="p-concern">
+  <div class="section">
+    <div class="section-title">来場前の悩み・不安 月別変化（日本語）</div>
+    <div class="card">
+      <div class="card-desc">4〜5月は「なし・特になし」が多数。6月から具体的な案内・足場への不安が複数出現。</div>
+      <div class="chart-wrap" data-h="220" data-mob="180"><canvas id="worryJP" role="img" aria-label="日本語来場前の悩み月別"></canvas></div>
+      <div class="concern-grid" style="margin-top:20px">
+        <div class="concern-item">
+          <div class="concern-month">4月 (n=86中40件が回答)</div>
+          <div class="concern-tags">
+            <div class="ctag"><div class="ctag-dot" style="background:#4ADE80"></div>「なし・特になし」が大多数</div>
+            <div class="ctag"><div class="ctag-dot" style="background:#FBBF24"></div>「厚底で行けるか」→行けました！</div>
+            <div class="ctag"><div class="ctag-dot" style="background:#FBBF24"></div>「雨の影響がどの程度あるか」</div>
+            <div class="ctag"><div class="ctag-dot" style="background:#4ADE80"></div>「あまり広くないかと思ったけど十分楽しめた」</div>
+          </div>
+        </div>
+        <div class="concern-item">
+          <div class="concern-month">5月 (n=81中21件が回答)</div>
+          <div class="concern-tags">
+            <div class="ctag"><div class="ctag-dot" style="background:#4ADE80"></div>「なし」が多数</div>
+            <div class="ctag"><div class="ctag-dot" style="background:#F87171"></div>「洞窟内が滑らないか心配」</div>
+            <div class="ctag"><div class="ctag-dot" style="background:#F87171"></div>「母（70代）の足場・急勾配心配」</div>
+            <div class="ctag"><div class="ctag-dot" style="background:#F87171"></div>「子どもも楽しめるか」</div>
+            <div class="ctag"><div class="ctag-dot" style="background:#FBBF24"></div>「値段が高い」</div>
+          </div>
+        </div>
+        <div class="concern-item">
+          <div class="concern-month">6月 (n=31中16件が回答)</div>
+          <div class="concern-tags">
+            <div class="ctag"><div class="ctag-dot" style="background:#F87171"></div><strong>「案内板が少なく不安」×2件</strong></div>
+            <div class="ctag"><div class="ctag-dot" style="background:#F87171"></div><strong>「入口が分かりにくかった」</strong></div>
+            <div class="ctag"><div class="ctag-dot" style="background:#F87171"></div>「子供が暗い場所を怖がっていた」×2件</div>
+            <div class="ctag"><div class="ctag-dot" style="background:#FBBF24"></div>「チケット購入場所に軽食あると嬉しい」</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">施設への不満・改善要望（全言語）</div>
+    <div class="card">
+      <div class="card-desc">「なし・特になし」を除いた具体的な不満・要望。6月から案内サインへの指摘が複数言語で出現。</div>
+      <div class="chart-wrap" data-h="220" data-mob="180"><canvas id="issueAll" role="img" aria-label="施設不満改善要望月別"></canvas></div>
+      <div class="insight" style="margin-top:20px">
+        <span class="tag tag-alert">要対応</span>
+        <strong>案内サイン・音声ガイド（6月）</strong>：日本語2件「案内板が少ない」「入口が分かりにくい」、繁体字1件「売り場から入口の案内をもっと明確に」——<strong>複数言語で同時期に同内容の指摘</strong>が出現。施設共通の改善課題として優先対応が必要。<br><br>
+        <span class="tag tag-warn">継続監視</span>
+        <strong>足場・階段（5月〜）</strong>：日本語「急勾配で足腰弱い方は難あり」、繁体字「階段が少し危険」「高齢者に不便」「一直滴水（水滴り）」。高齢者・小さな子連れへの配慮が求められている。<br><br>
+        <span class="tag tag-warn">要検討</span>
+        <strong>価格・コスパ（繁体字4月）</strong>：「実体チケットがない・短い・票価太高（値段が高い）」——物理的チケット提供や滞在時間延長施策（宝探し等）の訴求強化が有効。
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">施設内で良かった点（満足ポイント）</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">日本語 良かった点（テーマ別）</div>
+        <div class="card-desc">自由記述を分類。ライトアップ・宝探し・写真スポットが上位。</div>
+        <div class="chart-wrap" data-h="220" data-mob="180"><canvas id="goodJP" role="img" aria-label="日本語良かった点"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">言語別 良かった点 キーワード</div>
+        <div style="display:flex; flex-direction:column; gap:12px; margin-top:8px">
+          <div>
+            <div style="font-size:11px; color:var(--muted); margin-bottom:6px; font-weight:500">🇯🇵 日本語</div>
+            <div class="chip-group"><span class="chip">鍾乳洞の美しさ</span>
+              <span class="chip">ライトアップ</span>
+              <span class="chip">宝探し</span>
+              <span class="chip">写真スポット明確</span>
+              <span class="chip">整備・清潔感</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:11px; color:var(--muted); margin-bottom:6px; font-weight:500">🇹🇼 繁体字</div>
+            <div class="chip-group"><span class="chip">燈光效果（照明）</span>
+              <span class="chip">鐘乳石洞</span>
+              <span class="chip">自然景観</span>
+              <span class="chip">動線清楚</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:11px; color:var(--muted); margin-bottom:6px; font-weight:500">🇺🇸 英語</div>
+            <div class="chip-group"><span class="chip">Calm atmosphere</span>
+              <span class="chip">Easy to navigate</span>
+              <span class="chip">Treasure hunt</span>
+              <span class="chip">Café</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:11px; color:var(--muted); margin-bottom:6px; font-weight:500">🇰🇷 한국어</div>
+            <div class="chip-group"><span class="chip">신비로웠다（神秘的）</span>
+              <span class="chip">화려한 동굴（美しい洞窟）</span>
+            </div>
+          </div>
+        </div>
+        <div class="insight" style="margin-top:16px">
+          全言語共通：<strong>照明演出・鍾乳洞の美しさ・整備された動線</strong>が高評価。ライトアップとフォトスポットの明確化は満足度向上の最重要要素。
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const MONTHS = ['4月','5月','6月'];
+const C = {
+  teal:'#2DD4BF', blue:'#60A5FA', amber:'#FBBF24', pink:'#F472B6',
+  coral:'#FB923C', purple:'#A78BFA', green:'#4ADE80', gray:'#6B7280',
+  indigo:'#818CF8', red:'#F87171'
+};
+const gridColor = 'rgba(255,255,255,0.05)';
+const tickColor = '#6B7280';
+function isMob(){ return window.innerWidth < 600; }
+const baseOpts = {
+  responsive:true, maintainAspectRatio:false,
+  plugins:{legend:{display:false}},
+  scales:{
+    x:{grid:{color:gridColor}, ticks:{color:tickColor, autoSkip:false, font:{size:10}, maxRotation:35}},
+    y:{grid:{color:gridColor}, ticks:{color:tickColor, font:{size:10}}, beginAtZero:true}
+  }
+};
+const stackOpts = JSON.parse(JSON.stringify(baseOpts));
+stackOpts.scales.x.stacked = true;
+stackOpts.scales.y.stacked = true;
+stackOpts.scales.x.ticks = {color:tickColor, autoSkip:false, font:{size:10}, maxRotation:0};
+stackOpts.scales.y.ticks = {color:tickColor, font:{size:10}};
+
+function mk(id,type,labels,datasets,opts){
+  const el=document.getElementById(id);
+  if(!el)return;
+  new Chart(el,{type,data:{labels,datasets},options:Object.assign(JSON.parse(JSON.stringify(baseOpts)),opts||{})});
+}
+function mkS(id,labels,datasets,opts){
+  const el=document.getElementById(id);
+  if(!el)return;
+  new Chart(el,{type:'bar',data:{labels,datasets},options:Object.assign(JSON.parse(JSON.stringify(stackOpts)),opts||{})});
+}
+
+// ── OVERVIEW ──
+mk('overviewChart','line',MONTHS,[
+  {label:'JP',data:[100,81,31],borderColor:C.green,backgroundColor:'rgba(74,222,128,0.08)',tension:.35,pointRadius:5,fill:true},
+  {label:'EN',data:[9,14,8],borderColor:C.blue,backgroundColor:'rgba(96,165,250,0.08)',tension:.35,pointRadius:5,fill:true},
+  {label:'TW',data:[33,15,14],borderColor:C.amber,backgroundColor:'rgba(251,191,36,0.08)',tension:.35,pointRadius:5,fill:true},
+  {label:'KR',data:[2,2,0],borderColor:C.pink,backgroundColor:'rgba(244,114,182,0.08)',tension:.35,pointRadius:5,fill:true},
+]);
+
+mkS('resJP',MONTHS,[
+  {label:'県外',data:[68,44,26],backgroundColor:C.blue+'bb',borderRadius:4},
+  {label:'県内',data:[25,31,4],backgroundColor:C.teal+'bb',borderRadius:4},
+  {label:'海外',data:[7,6,1],backgroundColor:C.coral+'bb',borderRadius:4},
+]);
+
+mk('resIntl','bar',['EN 4月','EN 5月','EN 6月','TW 4月','TW 5月','TW 6月'],[
+  {label:'海外',data:[7,11,6,32,15,14],backgroundColor:[C.blue+'88',C.blue+'88',C.blue+'88',C.amber+'88',C.amber+'88',C.amber+'88'],borderRadius:4},
+],{scales:{x:{grid:{color:gridColor},ticks:{color:tickColor,autoSkip:false}},y:{grid:{color:gridColor},ticks:{color:tickColor},beginAtZero:true}}});
+
+mk('areaChart','bar',['恩納村','うるま市','那覇市','北谷町','名護市','その他'],[
+  {label:'4月',data:[21,15,0,3,0,34],backgroundColor:C.blue+'99',borderRadius:3},
+  {label:'5月',data:[12,10,6,4,4,27],backgroundColor:C.teal+'99',borderRadius:3},
+  {label:'6月',data:[6,0,11,2,3,4],backgroundColor:C.coral+'99',borderRadius:3},
+],{plugins:{legend:{display:false}},scales:{x:{grid:{color:gridColor},ticks:{color:tickColor,autoSkip:false}},y:{grid:{color:gridColor},ticks:{color:tickColor},beginAtZero:true}}});
+
+// ── JP PAGE ──
+mkS('jpAge',MONTHS,[
+  {label:'10代',data:[8,5,5],backgroundColor:C.indigo,borderRadius:3},
+  {label:'20代',data:[20,19,5],backgroundColor:C.teal,borderRadius:3},
+  {label:'30代',data:[28,16,1],backgroundColor:C.coral,borderRadius:3},
+  {label:'40代',data:[20,23,8],backgroundColor:C.blue,borderRadius:3},
+  {label:'50代',data:[11,5,7],backgroundColor:C.amber,borderRadius:3},
+  {label:'60代',data:[12,9,5],backgroundColor:C.pink,borderRadius:3},
+]);
+
+mkS('jpGender',MONTHS,[
+  {label:'女性',data:[66,43,19],backgroundColor:C.pink+'bb',borderRadius:3},
+  {label:'男性',data:[33,37,12],backgroundColor:C.blue+'bb',borderRadius:3},
+]);
+
+mkS('jpVisit',MONTHS,[
+  {label:'初めて',data:[97,74,27],backgroundColor:C.teal+'99',borderRadius:3},
+  {label:'2回目以上',data:[3,7,4],backgroundColor:C.amber+'99',borderRadius:3},
+],{scales:{x:{stacked:true,grid:{color:gridColor},ticks:{color:tickColor,autoSkip:false}},y:{stacked:true,grid:{color:gridColor},ticks:{color:tickColor},beginAtZero:true}}});
+
+mkS('jpStay',MONTHS,[
+  {label:'30分未満',data:[12,14,7],backgroundColor:C.purple+'88',borderRadius:3},
+  {label:'30〜40分',data:[61,42,12],backgroundColor:C.purple+'cc',borderRadius:3},
+  {label:'40〜60分',data:[20,14,10],backgroundColor:'#7C3AED',borderRadius:3},
+  {label:'60分以上',data:[7,11,2],backgroundColor:C.pink,borderRadius:3},
+]);
+
+mk('jpGroup','bar',['1人','2人','3人','4人','5人','6人','7人以上'],[
+  {label:'4月',data:[6,53,15,14,4,7,1],backgroundColor:C.blue+'88',borderRadius:3},
+  {label:'5月',data:[5,35,8,17,8,3,5],backgroundColor:C.teal+'88',borderRadius:3},
+  {label:'6月',data:[2,12,8,6,0,0,3],backgroundColor:C.coral+'88',borderRadius:3},
+],{plugins:{legend:{display:false}},scales:{x:{grid:{color:gridColor},ticks:{color:tickColor,autoSkip:false}},y:{grid:{color:gridColor},ticks:{color:tickColor},beginAtZero:true}}});
+
+mkS('jpSNS',MONTHS,[
+  {label:'はい',data:[51,55,61],backgroundColor:C.teal+'cc',borderRadius:3},
+  {label:'いいえ',data:[49,45,39],backgroundColor:C.gray+'88',borderRadius:3},
+],{plugins:{legend:{display:false}},scales:{x:{stacked:true,grid:{color:gridColor},ticks:{color:tickColor,autoSkip:false}},y:{stacked:true,max:100,grid:{color:gridColor},ticks:{color:tickColor,callback:v=>v+'%'}}}});
+
+mk('jpCompete','bar',['アメリカン\nビレッジ','美ら海\n水族館','ビオスの丘','万座毛','神村酒造','勝連城跡','嘉手納\n展望台','首里城','ぬちまーす'],[ 
+  {label:'4月',data:[3,1,2,0,1,2,2,0,0],backgroundColor:C.blue+'88',borderRadius:3},
+  {label:'5月',data:[3,3,3,0,2,0,0,1,1],backgroundColor:C.teal+'88',borderRadius:3},
+  {label:'6月',data:[1,2,0,4,0,0,0,0,1],backgroundColor:C.coral+'88',borderRadius:3},
+],{plugins:{legend:{display:false}},scales:{x:{grid:{color:gridColor},ticks:{color:tickColor,autoSkip:false,maxRotation:40,font:{size:11}}},y:{grid:{color:gridColor},ticks:{color:tickColor},beginAtZero:true}}});
+
+// ── INTL PAGE ──
+mk('intlAge','bar',['10代','20代','30代','40代','50代','60代以上'],[
+  {label:'JP',data:[18,44,45,51,23,26],backgroundColor:C.green+'88',borderRadius:3},
+  {label:'EN',data:[0,8,12,5,4,2],backgroundColor:C.blue+'88',borderRadius:3},
+  {label:'TW',data:[5,16,24,14,2,1],backgroundColor:C.amber+'88',borderRadius:3},
+],{plugins:{legend:{display:false}},scales:{x:{grid:{color:gridColor},ticks:{color:tickColor,autoSkip:false}},y:{grid:{color:gridColor},ticks:{color:tickColor},beginAtZero:true}}});
+
+mk('intlStay','bar',['30分未満','30〜40分','40〜60分','60分以上'],[
+  {label:'JP',data:[33,115,44,20],backgroundColor:C.green+'88',borderRadius:3},
+  {label:'EN',data:[4,8,17,2],backgroundColor:C.blue+'88',borderRadius:3},
+  {label:'TW',data:[9,28,16,9],backgroundColor:C.amber+'88',borderRadius:3},
+],{plugins:{legend:{display:false}},scales:{x:{grid:{color:gridColor},ticks:{color:tickColor,autoSkip:false}},y:{grid:{color:gridColor},ticks:{color:tickColor},beginAtZero:true}}});
+
+mk('intlSNS','line',MONTHS,[
+  {label:'JP',data:[51,55,61],borderColor:C.green,tension:.35,pointRadius:5},
+  {label:'EN',data:[44,7,25],borderColor:C.blue,tension:.35,pointRadius:5},
+  {label:'TW',data:[12,33,36],borderColor:C.amber,tension:.35,pointRadius:5},
+],{scales:{x:{grid:{color:gridColor},ticks:{color:tickColor,autoSkip:false}},y:{grid:{color:gridColor},ticks:{color:tickColor,callback:v=>v+'%'},beginAtZero:true,max:100}}});
+
+mk('twArea','bar',['恩納村','北谷町','その他','那覇市','名護市','宇流麻市'],[
+  {label:'4月',data:[12,5,14,0,0,0],backgroundColor:C.amber+'99',borderRadius:3},
+  {label:'5月',data:[2,1,8,1,1,1],backgroundColor:C.coral+'99',borderRadius:3},
+  {label:'6月',data:[1,1,1,6,5,0],backgroundColor:C.pink+'99',borderRadius:3},
+],{plugins:{legend:{display:false}},scales:{x:{grid:{color:gridColor},ticks:{color:tickColor,autoSkip:false}},y:{grid:{color:gridColor},ticks:{color:tickColor},beginAtZero:true}}});
+
+// ── MEDIA PAGE ──
+mk('mediaAll','bar',['Instagram','Google検索','Googleマップ','知人紹介','雑誌・FP','YouTube'],[
+  {label:'JP',data:[59,48,30,22,17,7],backgroundColor:C.green+'88',borderRadius:3},
+  {label:'EN',data:[3,13,16,5,0,0],backgroundColor:C.blue+'88',borderRadius:3},
+  {label:'TW',data:[8,17,13,12,2,7],backgroundColor:C.amber+'88',borderRadius:3},
+],{plugins:{legend:{display:false}},scales:{x:{grid:{color:gridColor},ticks:{color:tickColor,autoSkip:false,maxRotation:30}},y:{grid:{color:gridColor},ticks:{color:tickColor},beginAtZero:true}}});
+
+mkS('mediaJP',MONTHS,[
+  {label:'Instagram',data:[28,21,10],backgroundColor:C.pink,borderRadius:3},
+  {label:'Google検索',data:[24,20,4],backgroundColor:C.blue,borderRadius:3},
+  {label:'Googleマップ',data:[14,11,5],backgroundColor:C.teal,borderRadius:3},
+  {label:'知人紹介',data:[10,10,2],backgroundColor:C.amber,borderRadius:3},
+  {label:'雑誌等',data:[10,7,7],backgroundColor:C.gray,borderRadius:3},
+]);
+
+mkS('mediaTW',MONTHS,[
+  {label:'Google地図',data:[9,2,2],backgroundColor:C.blue,borderRadius:3},
+  {label:'Google検索',data:[9,7,1],backgroundColor:C.teal,borderRadius:3},
+  {label:'Instagram',data:[5,1,2],backgroundColor:C.pink,borderRadius:3},
+  {label:'親友紹介',data:[5,2,5],backgroundColor:C.amber,borderRadius:3},
+  {label:'YouTube',data:[3,2,2],backgroundColor:C.purple,borderRadius:3},
+]);
+
+mkS('mediaEN',MONTHS,[
+  {label:'Google検索',data:[3,6,4],backgroundColor:C.blue,borderRadius:3},
+  {label:'Googleマップ',data:[5,6,0],backgroundColor:C.teal,borderRadius:3},
+  {label:'Instagram',data:[1,2,0],backgroundColor:C.pink,borderRadius:3},
+  {label:'口コミ',data:[0,0,3],backgroundColor:C.amber,borderRadius:3},
+]);
+
+// ── REASON PAGE ──
+mk('reasonAll','bar',['神秘的な雰囲気','雨でも楽しめる','沖縄自然体験','写真映え','子連れ','立地・口コミ'],[
+  {label:'JP',data:[125,119,81,62,47,31],backgroundColor:C.green+'88',borderRadius:3},
+  {label:'EN',data:[12,15,7,8,4,13],backgroundColor:C.blue+'88',borderRadius:3},
+  {label:'TW',data:[36,10,26,27,10,8],backgroundColor:C.amber+'88',borderRadius:3},
+  {label:'KR',data:[0,0,0,0,4,0],backgroundColor:C.pink+'88',borderRadius:3},
+],{plugins:{legend:{display:false}},scales:{x:{grid:{color:gridColor},ticks:{color:tickColor,autoSkip:false,maxRotation:30}},y:{grid:{color:gridColor},ticks:{color:tickColor},beginAtZero:true}}});
+
+mk('reasonJP','bar',MONTHS,[
+  {label:'神秘的な雰囲気',data:[61,43,21],backgroundColor:C.purple,borderRadius:3},
+  {label:'雨でも楽しめる',data:[55,53,11],backgroundColor:C.blue,borderRadius:3},
+  {label:'沖縄自然体験',data:[44,24,13],backgroundColor:C.teal,borderRadius:3},
+  {label:'写真映え',data:[35,22,5],backgroundColor:C.pink,borderRadius:3},
+  {label:'子連れ',data:[20,24,3],backgroundColor:C.amber,borderRadius:3},
+  {label:'割引キャンペーン',data:[17,14,2],backgroundColor:C.coral,borderRadius:3},
+],{plugins:{legend:{display:false}},scales:{x:{grid:{color:gridColor},ticks:{color:tickColor,autoSkip:false}},y:{grid:{color:gridColor},ticks:{color:tickColor},beginAtZero:true}}});
+
+mk('eventAll','bar',['イルミネーション','地元特産品','フルーツ採集','LIVEイベント','観葉植物園','展示会','移動遊園地'],[
+  {label:'JP',data:[102,35,32,17,15,5,6],backgroundColor:C.green+'88',borderRadius:3},
+  {label:'EN',data:[10,3,3,6,5,3,1],backgroundColor:C.blue+'88',borderRadius:3},
+  {label:'TW',data:[23,7,3,12,1,9,7],backgroundColor:C.amber+'88',borderRadius:3},
+  {label:'KR',data:[3,0,1,0,0,0,0],backgroundColor:C.pink+'88',borderRadius:3},
+],{plugins:{legend:{display:false}},scales:{x:{grid:{color:gridColor},ticks:{color:tickColor,autoSkip:false,maxRotation:30}},y:{grid:{color:gridColor},ticks:{color:tickColor},beginAtZero:true}}});
+
+// ── CONCERN PAGE ──
+mk('worryJP','bar',['なし・特になし','足場・高齢者','子ども関連','案内・入口','料金','洞窟内温度等'],[
+  {label:'4月',data:[26,1,0,0,0,1],backgroundColor:C.blue+'99',borderRadius:3},
+  {label:'5月',data:[13,3,1,1,1,1],backgroundColor:C.teal+'99',borderRadius:3},
+  {label:'6月',data:[8,0,2,3,0,0],backgroundColor:C.coral+'99',borderRadius:3},
+],{plugins:{legend:{display:false}},scales:{x:{grid:{color:gridColor},ticks:{color:tickColor,autoSkip:false,maxRotation:30}},y:{grid:{color:gridColor},ticks:{color:tickColor},beginAtZero:true}}});
+
+mk('issueAll','bar',['足場・安全','入口・工事','音声ガイド','宝箱・内容','価格・コスパ','駐車場','手すり等'],[
+  {label:'JP 4月',data:[4,1,0,0,0,0,0],backgroundColor:C.blue+'99',borderRadius:3},
+  {label:'JP 5月',data:[1,2,0,1,0,1,0],backgroundColor:C.teal+'99',borderRadius:3},
+  {label:'JP 6月',data:[1,0,2,1,1,0,0],backgroundColor:C.coral+'99',borderRadius:3},
+  {label:'TW 4月',data:[0,0,0,0,1,0,1],backgroundColor:C.amber+'66',borderRadius:3},
+  {label:'TW 5月',data:[1,0,0,0,0,0,0],backgroundColor:C.amber+'99',borderRadius:3},
+  {label:'TW 6月',data:[1,0,0,0,0,0,0],backgroundColor:'#D97706',borderRadius:3},
+],{plugins:{legend:{display:false}},scales:{x:{grid:{color:gridColor},ticks:{color:tickColor,autoSkip:false,maxRotation:30}},y:{grid:{color:gridColor},ticks:{color:tickColor},beginAtZero:true}}});
+
+mk('goodJP','bar',['ライトアップ・演出','鍾乳洞の美しさ','宝探し','写真スポット明確','カフェ','自然・整備','清潔感'],[
+  {label:'4月',data:[2,5,1,2,0,3,1],backgroundColor:C.teal+'88',borderRadius:3},
+  {label:'5月',data:[5,3,3,1,1,2,0],backgroundColor:C.blue+'88',borderRadius:3},
+  {label:'6月',data:[2,3,0,0,1,2,1],backgroundColor:C.purple+'88',borderRadius:3},
+],{plugins:{legend:{display:false}},scales:{x:{grid:{color:gridColor},ticks:{color:tickColor,autoSkip:false,maxRotation:30}},y:{grid:{color:gridColor},ticks:{color:tickColor},beginAtZero:true}}});
+
+// ── PAGE SWITCH ──
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('p-'+id).classList.add('active');
+  event.target.classList.add('active');
+  applyChartHeights();
+}
+
+// ── RESPONSIVE CHART HEIGHTS ──
+function applyChartHeights(){
+  const mob = window.innerWidth < 600;
+  document.querySelectorAll('.chart-wrap[data-h]').forEach(el=>{
+    const h = mob ? el.dataset.mob : el.dataset.h;
+    el.style.height = h + 'px';
+  });
+}
+applyChartHeights();
+window.addEventListener('resize', applyChartHeights);
+</script>
+</body>
+</html>
